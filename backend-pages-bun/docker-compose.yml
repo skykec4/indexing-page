@@ -1,0 +1,14 @@
+version: "3.8"
+
+services:
+  app:
+    image: backend-pages-bun
+    container_name: backend-pages-bun
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=host.docker.internal
+      - DB_USER=root
+      - DB_PASSWORD=nhn2025!@
+      - DB_NAME=db_fe

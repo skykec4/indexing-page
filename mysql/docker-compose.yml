@@ -1,0 +1,19 @@
+services:
+  maria:
+    image: mariadb:10.11
+    container_name: mariadb-container
+    restart: always
+    environment:
+      MARIADB_ROOT_PASSWORD: nhn2025!@
+      MARIADB_DATABASE: db_fe
+      MARIADB_USER: nhn_fe
+      MARIADB_PASSWORD: nhn2025!@
+      TZ: Asia/Seoul
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mariadb
+      - ./my.cnf:/etc/my.cnf
+
+volumes:
+  mysql-data:

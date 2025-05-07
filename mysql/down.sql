@@ -1,0 +1,4 @@
+USE db_fe;
+
+DROP TABLE IF EXISTS pages;
+DROP TABLE IF EXISTS sites;

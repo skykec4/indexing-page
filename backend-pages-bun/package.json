@@ -1,0 +1,18 @@
+{
+  "name": "backend-page",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts",
+    "dev": "bun --watch index.ts"
+  },
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "dependencies": {
+    "mysql2": "^3.9.1"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  }
+}

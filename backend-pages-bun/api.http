@@ -1,0 +1,17 @@
+GET http://localhost:3000/api/status HTTP/1.1
+
+###
+GET http://localhost:3000/api/sites HTTP/1.1
+
+###
+POST http://localhost:3000/api/sites HTTP/1.1
+Content-Type: application/json
+
+{
+    "code": "test4",
+    "name": "test",
+    "domain": "test"
+}
+
+###
+GET http://localhost:3000/api/menu/cloud HTTP/1.1
