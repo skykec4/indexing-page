@@ -1,27 +1,13 @@
-
 services:
-  api:
-    build: .
+  app:
+    image: backend-pages
+    container_name: backend-pages
+    restart: always
     ports:
-      - "8080:8080"
+      - "3000:3000"
     environment:
-      - DB_HOST=mysql
+      - DB_HOST=host.docker.internal
+      - DB_PORT=3306
       - DB_USER=root
-      - DB_PASSWORD=password
+      - DB_PASSWORD=nhn2025!@
       - DB_NAME=db_fe
-    depends_on:
-      - mysql
-
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_ROOT_PASSWORD: password
-      MYSQL_DATABASE: db_fe
-    ports:
-      - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-volumes:
-  mysql_data:
