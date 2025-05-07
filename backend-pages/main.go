@@ -38,10 +38,22 @@ func main() {
 
 	// API 라우트
 	r.Route("/api", func(r chi.Router) {
-		r.Route("/v1", func(r chi.Router) {
-			r.Route("/sites/{siteCode}", func(r chi.Router) {
-				h := handler.NewHandler(db)
+		h := handler.NewHandler(db)
+
+		// 사이트 관련 라우트
+		r.Route("/sites", func(r chi.Router) {
+			r.Get("/", h.GetSites)
+			r.Post("/", h.CreateSite)
+			r.Route("/{siteCode}", func(r chi.Router) {
 				r.Get("/menu", h.GetSiteMenu)
+				r.Route("/groups", func(r chi.Router) {
+					r.Get("/", h.GetPageGroups)
+					r.Post("/", h.CreatePageGroup)
+					r.Route("/{groupId}", func(r chi.Router) {
+						r.Put("/", h.UpdatePageGroup)
+						r.Delete("/", h.DeletePageGroup)
+					})
+				})
 				r.Route("/pages", func(r chi.Router) {
 					r.Get("/", h.ListPages)
 					r.Post("/", h.CreatePage)
@@ -55,7 +67,7 @@ func main() {
 		})
 	})
 
-	log.Println("Server starting on PORT")
+	log.Printf("Server starting on port %d", PORT)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", PORT), r); err != nil {
 		log.Fatal(err)
 	}

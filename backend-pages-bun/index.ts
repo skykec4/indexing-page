@@ -22,7 +22,7 @@ import {
 } from "./src/handler/handler";
 
 const server = serve({
-  port: 3000,
+  port: 3001,
   routes: {
     "/api/status": new Response("OK"),
     "/api/sites": {
