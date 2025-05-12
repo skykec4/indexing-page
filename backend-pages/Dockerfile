@@ -6,9 +6,15 @@ WORKDIR /app
 # 필요한 시스템 패키지 설치
 RUN apk add --no-cache gcc musl-dev
 
+# swag 설치
+RUN go install github.com/swaggo/swag/cmd/swag@latest
+
+
 # Go 모듈 파일 복사 및 의존성 다운로드
 COPY go.mod go.sum ./
 RUN go mod download
+
+RUN swag init -g main.go
 
 # 소스 코드 복사
 COPY . .
@@ -29,7 +35,7 @@ ENV TZ=Asia/Seoul
 
 # 빌드 스테이지에서 생성된 바이너리만 복사
 COPY --from=builder /app/main .
-COPY --from=builder /app/schema.sql .
+COPY --from=builder /app/docs ./docs
 
 EXPOSE 3000
 

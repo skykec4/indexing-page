@@ -1,0 +1,579 @@
+basePath: /
+definitions:
+  models.CreatePageGroupInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  models.CreatePageInput:
+    properties:
+      content:
+        type: string
+      parent_id:
+        type: integer
+      slug:
+        type: string
+      title:
+        type: string
+    type: object
+  models.CreateSiteInput:
+    properties:
+      code:
+        type: string
+      domain:
+        type: string
+      name:
+        type: string
+    type: object
+  models.Page:
+    properties:
+      children:
+        items:
+          $ref: '#/definitions/models.Page'
+        type: array
+      content:
+        type: string
+      created_at:
+        type: string
+      depth:
+        type: integer
+      group_id:
+        type: integer
+      id:
+        type: integer
+      is_published:
+        type: boolean
+      menu_order:
+        type: integer
+      parent_id:
+        type: integer
+      site_id:
+        type: integer
+      slug:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
+  models.PageGroup:
+    properties:
+      created_at:
+        type: string
+      description:
+        type: string
+      group_id:
+        type: integer
+      menu:
+        items:
+          $ref: '#/definitions/models.Page'
+        type: array
+      name:
+        type: string
+      site_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.Site:
+    properties:
+      code:
+        type: string
+      created_at:
+        type: string
+      domain:
+        type: string
+      name:
+        type: string
+      site_id:
+        type: integer
+      updated_at:
+        type: string
+    type: object
+  models.UpdatePageGroupInput:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  models.UpdatePageInput:
+    properties:
+      content:
+        type: string
+      depth:
+        type: integer
+      is_published:
+        type: boolean
+      menu_order:
+        type: integer
+      parent_id:
+        type: integer
+      slug:
+        type: string
+      title:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Backend Pages API 서버
+  title: Backend Pages API
+  version: "1.0"
+paths:
+  /api/sites:
+    get:
+      consumes:
+      - application/json
+      description: 등록된 모든 사이트의 목록을 조회합니다.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Site'
+            type: array
+      summary: 모든 사이트 목록 조회
+      tags:
+      - sites
+    post:
+      consumes:
+      - application/json
+      description: 새로운 사이트를 생성합니다.
+      parameters:
+      - description: Site Info
+        in: body
+        name: site
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateSiteInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            additionalProperties:
+              type: integer
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 사이트 생성
+      tags:
+      - sites
+  /api/sites/{site_code}/groups:
+    get:
+      consumes:
+      - application/json
+      description: 사이트에 등록된 모든 페이지 그룹의 목록을 조회합니다.
+      parameters:
+      - description: 사이트 코드
+        in: path
+        name: site_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.PageGroup'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 페이지 그룹 목록 조회
+      tags:
+      - page_groups
+  /api/sites/{site_code}/groups/{group_id}:
+    delete:
+      consumes:
+      - application/json
+      description: 사이트의 페이지 그룹을 삭제합니다.
+      parameters:
+      - description: 사이트 코드
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Group ID
+        in: path
+        name: group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 페이지 그룹 삭제
+      tags:
+      - page_groups
+    put:
+      consumes:
+      - application/json
+      description: 사이트의 페이지 그룹 정보를 업데이트합니다.
+      parameters:
+      - description: 사이트 코드
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Group ID
+        in: path
+        name: group_id
+        required: true
+        type: integer
+      - description: Page Group Update Input
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePageGroupInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: boolean
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 페이지 그룹 업데이트
+      tags:
+      - page_groups
+  /api/sites/{site_code}/groups/{group_id}/pages:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all pages for a site and group
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Group ID
+        in: path
+        name: group_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Page'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List all pages
+      tags:
+      - pages
+    post:
+      consumes:
+      - application/json
+      description: Create a new page for a specific site and group
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Group ID
+        in: path
+        name: group_id
+        required: true
+        type: integer
+      - description: Page Information
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePageInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Page'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create new page
+      tags:
+      - pages
+  /api/sites/{site_code}/menu:
+    get:
+      consumes:
+      - application/json
+      description: 사이트의 전체 메뉴를 조회합니다.
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.Page'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 전체 메뉴 조회
+      tags:
+      - menu
+  /api/sites/{site_code}/pages/{page_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a specific page
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete page
+      tags:
+      - pages
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific page by its ID
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Page'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get page by ID
+      tags:
+      - pages
+    put:
+      consumes:
+      - application/json
+      description: Update an existing page with new information
+      parameters:
+      - description: Site Code
+        in: path
+        name: site_code
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      - description: Page Information
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePageInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Page'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update page
+      tags:
+      - pages
+  /api/sites/{siteCode}/groups:
+    post:
+      consumes:
+      - application/json
+      description: 사이트에 새로운 페이지 그룹을 생성합니다.
+      parameters:
+      - description: 사이트 코드
+        in: path
+        name: siteCode
+        required: true
+        type: string
+      - description: 페이지 그룹 생성 입력
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreatePageGroupInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.PageGroup'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: 페이지 그룹 생성
+      tags:
+      - page_groups
+swagger: "2.0"

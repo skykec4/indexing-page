@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS pages (
     group_id INT NULL,
     title VARCHAR(255) NOT NULL,
     slug VARCHAR(255) NOT NULL,
-    parent_id INT,
+    parent_id INT NULL DEFAULT NULL,
     depth INT NOT NULL DEFAULT 0,
-    content TEXT,
+    content TEXT NOT NULL DEFAULT '',
     menu_order INT NOT NULL DEFAULT 0,
     is_published BOOLEAN DEFAULT true,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -71,9 +71,9 @@ INSERT INTO pages (site_id, title, slug, parent_id, depth, menu_order) VALUES
 (@cloud_site_id, '가격', 'pricing', @cloud_service_id, 1, 2);
 
 -- 스토어 사이트 메뉴 샘플 데이터
-INSERT INTO pages (site_id, title, slug, parent_id, depth, menu_order) VALUES 
-((SELECT site_id FROM sites WHERE code = 'store'), '홈', 'home', NULL, 0, 1),
-((SELECT site_id FROM sites WHERE code = 'store'), '카테고리', 'categories', NULL, 0, 2);
+INSERT INTO pages (site_id, title, slug, parent_id, depth, content, menu_order) VALUES 
+((SELECT site_id FROM sites WHERE code = 'store'), '홈', 'home', NULL, 0, '홈', 1),
+((SELECT site_id FROM sites WHERE code = 'store'), '카테고리', 'categories', NULL, 0, '카테고리', 2);
 
 -- 스토어 카테고리 하위 메뉴
 SET @store_site_id = (SELECT site_id FROM sites WHERE code = 'store');
