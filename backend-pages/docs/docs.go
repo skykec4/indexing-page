@@ -396,7 +396,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new page for a specific site and group",
+                "description": "페이지 생성",
                 "consumes": [
                     "application/json"
                 ],
@@ -406,7 +406,7 @@ const docTemplate = `{
                 "tags": [
                     "pages"
                 ],
-                "summary": "Create new page",
+                "summary": "페이지 생성",
                 "parameters": [
                     {
                         "type": "string",
@@ -742,12 +742,6 @@ const docTemplate = `{
         "models.Page": {
             "type": "object",
             "properties": {
-                "children": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/models.Page"
-                    }
-                },
                 "content": {
                     "type": "string"
                 },
@@ -760,13 +754,19 @@ const docTemplate = `{
                 "group_id": {
                     "type": "integer"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "is_published": {
                     "type": "boolean"
                 },
+                "menu": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Page"
+                    }
+                },
                 "menu_order": {
+                    "type": "integer"
+                },
+                "page_id": {
                     "type": "integer"
                 },
                 "parent_id": {

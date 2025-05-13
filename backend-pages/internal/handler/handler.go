@@ -137,7 +137,7 @@ func (h *Handler) GetSiteMenu(w http.ResponseWriter, r *http.Request) {
 
 		// 각 그룹의 메뉴 조회
 		pageRows, err := h.db.Query(
-			`SELECT id, site_id, group_id, title, slug, parent_id, depth, menu_order, 
+			`SELECT page_id, site_id, group_id, title, slug, parent_id, depth, menu_order, 
 			content, is_published, created_at, updated_at 
 			FROM pages 
 			WHERE site_id = ? AND group_id = ? 
@@ -150,12 +150,12 @@ func (h *Handler) GetSiteMenu(w http.ResponseWriter, r *http.Request) {
 		}
 		defer pageRows.Close()
 
-		pages := []models.Page{} // ← 빈 슬라이스로 초기화
+		pages := []*models.Page{} // ← 빈 슬라이스로 초기화
 
 		for pageRows.Next() {
 			var page models.Page
 			if err := pageRows.Scan(
-				&page.ID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
+				&page.PageID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
 				&page.ParentID, &page.Depth, &page.MenuOrder, &page.Content,
 				&page.IsPublished, &page.CreatedAt, &page.UpdatedAt,
 			); err != nil {
@@ -165,12 +165,12 @@ func (h *Handler) GetSiteMenu(w http.ResponseWriter, r *http.Request) {
 
 			fmt.Println("page : ", page)
 
-			pages = append(pages, page)
+			pages = append(pages, &page)
 		}
 
 		fmt.Println("pages : ", len(pages))
 
-		group.Menu = buildMenuTree(pages)
+		group.Menu = BuildMenuTree(pages)
 		pageGroups = append(pageGroups, group)
 	}
 
@@ -186,8 +186,8 @@ func (h *Handler) GetSiteMenu(w http.ResponseWriter, r *http.Request) {
 }
 
 // CreatePage godoc
-// @Summary Create new page
-// @Description Create a new page for a specific site and group
+// @Summary 페이지 생성
+// @Description 페이지 생성
 // @Tags pages
 // @Accept json
 // @Produce json
@@ -233,11 +233,15 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 	// 	}
 	// 	depth++
 	// }
+	var parentID *int
+	if input.ParentID != nil && *input.ParentID != 0 {
+		parentID = input.ParentID
+	}
 
 	result, err := h.db.Exec(
 		`INSERT INTO pages (site_id, group_id, title, slug, parent_id, depth, menu_order, content, is_published) 
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-		siteID, groupId, input.Title, input.Slug, input.ParentID, depth, 0, input.Content, true,
+		siteID, groupId, input.Title, input.Slug, parentID, depth, 0, input.Content, true,
 	)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -256,9 +260,9 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 	var page models.Page
 
 	err = h.db.QueryRow(
-		"SELECT id, site_id, group_id, title, slug, parent_id, depth, menu_order, content, is_published, created_at, updated_at FROM pages WHERE id = ?", id,
+		"SELECT page_id, site_id, group_id, title, slug, parent_id, depth, menu_order, content, is_published, created_at, updated_at FROM pages WHERE id = ?", id,
 	).Scan(
-		&page.ID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
+		&page.PageID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
 		&page.ParentID, &page.Depth, &page.MenuOrder, &page.Content,
 		&page.IsPublished, &page.CreatedAt, &page.UpdatedAt,
 	)
@@ -271,56 +275,42 @@ func (h *Handler) CreatePage(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(page)
 }
 
-func buildMenuTree(pages []models.Page) []models.Page {
-	// 페이지 맵 생성
+func BuildMenuTree(pages []*models.Page) []*models.Page {
 	pageMap := make(map[int]*models.Page)
-	for i := range pages {
-		pageMap[pages[i].ID] = &pages[i]
+
+	// 모든 페이지를 맵에 저장
+	for _, page := range pages {
+		page.Menu = []*models.Page{} // 초기화
+		pageMap[page.PageID] = page
 	}
 
-	// 모든 페이지의 Children 필드 초기화
-	for i := range pages {
-		pages[i].Children = []models.Page{}
-	}
-
-	// 트리 구조 구성
+	// 트리 구성
+	var roots []*models.Page
 	for _, page := range pages {
 		if page.ParentID != nil {
 			if parent, exists := pageMap[*page.ParentID]; exists {
-				parent.Children = append(parent.Children, page)
+				parent.Menu = append(parent.Menu, page)
 			}
-		}
-	}
-
-	// 루트 페이지 찾기
-	var roots []models.Page
-	for _, page := range pages {
-		if page.ParentID == nil {
+		} else {
 			roots = append(roots, page)
 		}
 	}
 
-	// 모든 페이지의 자식을 출력
+	// 디버깅 출력 (선택적)
 	for _, page := range pages {
-		fmt.Printf("Page ID: %d, Parent ID: %v, Children: %d\n", page.ID, page.ParentID, len(page.Children))
+		fmt.Printf("Page ID: %d, Parent ID: %v, Children: %d\n", page.PageID, page.ParentID, len(page.Menu))
 	}
-
-	// 모든 레벨의 자식을 재귀적으로 출력
 	printChildren(roots, 0)
 
-	// 루트 페이지만 반환
 	return roots
 }
 
-// 재귀적으로 자식을 출력하는 함수
-func printChildren(pages []models.Page, level int) {
+func printChildren(pages []*models.Page, level int) {
 	for _, page := range pages {
-		// 들여쓰기
 		indent := strings.Repeat("  ", level)
-		fmt.Printf("%sPage ID: %d, Children: %d\n", indent, page.ID, len(page.Children))
-		// 자식이 있으면 재귀 호출
-		if len(page.Children) > 0 {
-			printChildren(page.Children, level+1)
+		fmt.Printf("%sPage ID: %d, Children: %d\n", indent, page.PageID, len(page.Menu))
+		if len(page.Menu) > 0 {
+			printChildren(page.Menu, level+1)
 		}
 	}
 }
@@ -346,7 +336,7 @@ func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
 	}
 
 	rows, err := h.db.Query(`
-		SELECT id, site_id, group_id, title, slug, parent_id, depth, 
+		SELECT page_id, site_id, group_id, title, slug, parent_id, depth, 
 		menu_order, content, is_published, created_at, updated_at
 		FROM pages 
 		WHERE site_id = (SELECT site_id FROM sites WHERE code = ?)
@@ -363,7 +353,7 @@ func (h *Handler) ListPages(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		var page models.Page
 		if err := rows.Scan(
-			&page.ID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
+			&page.PageID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
 			&page.ParentID, &page.Depth, &page.MenuOrder, &page.Content,
 			&page.IsPublished, &page.CreatedAt, &page.UpdatedAt,
 		); err != nil {
@@ -397,11 +387,11 @@ func (h *Handler) GetPage(w http.ResponseWriter, r *http.Request) {
 
 	var page models.Page
 	err = h.db.QueryRow(`
-		SELECT id, site_id, group_id, title, slug, parent_id, depth, 
+		SELECT page_id, site_id, group_id, title, slug, parent_id, depth, 
 		menu_order, content, is_published, created_at, updated_at
-		FROM pages WHERE id = ?
+		FROM pages WHERE page_id = ?
 	`, pageID).Scan(
-		&page.ID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
+		&page.PageID, &page.SiteID, &page.GroupID, &page.Title, &page.Slug,
 		&page.ParentID, &page.Depth, &page.MenuOrder, &page.Content,
 		&page.IsPublished, &page.CreatedAt, &page.UpdatedAt,
 	)
@@ -451,7 +441,7 @@ func (h *Handler) UpdatePage(w http.ResponseWriter, r *http.Request) {
 	result, err := h.db.Exec(`
 		UPDATE pages 
 		SET title = ?, slug = ?, content = ?, updated_at = NOW()
-		WHERE id = ?
+		WHERE page_id = ?
 	`, input.Title, input.Slug, input.Content, pageID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -491,7 +481,7 @@ func (h *Handler) DeletePage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := h.db.Exec("DELETE FROM pages WHERE id = ?", pageID)
+	result, err := h.db.Exec("DELETE FROM pages WHERE page_id = ?", pageID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

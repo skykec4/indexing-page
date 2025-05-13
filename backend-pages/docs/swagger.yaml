@@ -29,10 +29,6 @@ definitions:
     type: object
   models.Page:
     properties:
-      children:
-        items:
-          $ref: '#/definitions/models.Page'
-        type: array
       content:
         type: string
       created_at:
@@ -41,11 +37,15 @@ definitions:
         type: integer
       group_id:
         type: integer
-      id:
-        type: integer
       is_published:
         type: boolean
+      menu:
+        items:
+          $ref: '#/definitions/models.Page'
+        type: array
       menu_order:
+        type: integer
+      page_id:
         type: integer
       parent_id:
         type: integer
@@ -334,7 +334,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create a new page for a specific site and group
+      description: 페이지 생성
       parameters:
       - description: Site Code
         in: path
@@ -371,7 +371,7 @@ paths:
             additionalProperties:
               type: string
             type: object
-      summary: Create new page
+      summary: 페이지 생성
       tags:
       - pages
   /api/sites/{site_code}/menu:

@@ -5,12 +5,12 @@ import (
 )
 
 type Site struct {
-	SiteID    int       `json:"site_id"`
-	Code      string    `json:"code"`
-	Name      string    `json:"name"`
-	Domain    *string   `json:"domain"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	SiteID    int        `json:"site_id"`
+	Code      string     `json:"code"`
+	Name      string     `json:"name"`
+	Domain    *string    `json:"domain"`
+	CreatedAt time.Time  `json:"created_at"`
+	UpdatedAt *time.Time `json:"updated_at"`
 }
 
 // MarshalJSON implements custom JSON marshaling for Site
@@ -33,29 +33,29 @@ type Site struct {
 // }
 
 type PageGroup struct {
-	GroupID     int       `json:"group_id"`
-	SiteID      int       `json:"site_id"`
-	Name        string    `json:"name"`
-	Description string    `json:"description"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Menu        []Page    `json:"menu"`
+	GroupID     int        `json:"group_id"`
+	SiteID      int        `json:"site_id"`
+	Name        string     `json:"name"`
+	Description string     `json:"description"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+	Menu        []*Page    `json:"menu"`
 }
 
 type Page struct {
-	ID          int       `json:"id"`
-	SiteID      int       `json:"site_id"`
-	GroupID     int       `json:"group_id"`
-	Title       string    `json:"title"`
-	Slug        string    `json:"slug"`
-	ParentID    *int      `json:"parent_id"`
-	Depth       int       `json:"depth"`
-	MenuOrder   int       `json:"menu_order"`
-	Content     string    `json:"content"`
-	IsPublished bool      `json:"is_published"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-	Children    []Page    `json:"children,omitempty"`
+	PageID      int        `json:"page_id"`
+	SiteID      int        `json:"site_id"`
+	GroupID     int        `json:"group_id"`
+	Title       string     `json:"title"`
+	Slug        string     `json:"slug"`
+	ParentID    *int       `json:"parent_id"`
+	Depth       int        `json:"depth"`
+	MenuOrder   int        `json:"menu_order"`
+	Content     string     `json:"content"`
+	IsPublished bool       `json:"is_published"`
+	CreatedAt   time.Time  `json:"created_at"`
+	UpdatedAt   *time.Time `json:"updated_at"`
+	Menu        []*Page    `json:"menu"`
 }
 
 type CreateSiteInput struct {
@@ -67,7 +67,7 @@ type CreateSiteInput struct {
 type CreatePageInput struct {
 	Title    string `json:"title"`
 	Slug     string `json:"slug"`
-	ParentID *int   `json:"parent_id"`
+	ParentID *int   `json:"parent_id,omitempty"`
 	Content  string `json:"content"`
 }
 

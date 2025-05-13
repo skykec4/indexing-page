@@ -14,10 +14,10 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 COPY go.mod go.sum ./
 RUN go mod download
 
-RUN swag init -g main.go
 
 # 소스 코드 복사
 COPY . .
+RUN swag init -g main.go
 
 # 애플리케이션 빌드
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
