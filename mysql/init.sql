@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS pages (
     updated_at TIMESTAMP DEFAULT NULL,
     FOREIGN KEY (parent_id) REFERENCES pages(page_id) ON DELETE CASCADE,
     FOREIGN KEY (site_id) REFERENCES sites(site_id) ON DELETE CASCADE,
-    FOREIGN KEY (group_id) REFERENCES page_groups(group_id) ON DELETE SET NULL,
+    FOREIGN KEY (group_id) REFERENCES page_groups(group_id) ON DELETE CASCADE,
     UNIQUE KEY (site_id, slug, parent_id),
     INDEX idx_group_id (group_id)
 );
